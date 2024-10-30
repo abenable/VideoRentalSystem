@@ -1,4 +1,4 @@
-#include "video.h"
+#include "../include/video.h"
 #include <iostream>
 
 using namespace std; // Add this line

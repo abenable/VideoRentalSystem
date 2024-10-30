@@ -1,4 +1,4 @@
-#include "Customer.h"
+#include "../include/customer.h"
 #include <iostream>
 
 using namespace std;
