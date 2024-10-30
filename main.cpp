@@ -1,5 +1,6 @@
 #include "include/dbHandler.h"
 #include <iostream>
+#include <vector>
 
 using namespace std; // Add this line
 
@@ -13,8 +14,28 @@ void displayMainMenu()
     cout << "5. Add Rental\n";
     cout << "6. Return Rental\n";
     cout << "7. View Rental\n";
+    cout << "8. View All Customers\n";
     cout << "0. Exit\n";
     cout << "Choose an option: ";
+}
+void viewAllCustomers(DatabaseHandler &dbHandler)
+{
+    vector<Customer> customers = dbHandler.getAllCustomers();
+    if (customers.empty())
+    {
+        cout << "No registered customers found.\n";
+    }
+    else
+    {
+        cout << "Registered Customers:\n";
+        for (const auto &customer : customers)
+        {
+            cout << "Customer ID: " << customer.getCustomerID() << "\n"
+                 << "Name: " << customer.getName() << "\n"
+                 << "Email: " << customer.getEmail() << "\n"
+                 << "Phone: " << customer.getPhone() << "\n\n";
+        }
+    }
 }
 
 void addCustomer(DatabaseHandler &dbHandler)
@@ -173,6 +194,9 @@ int main()
             break;
         case 7:
             viewRental(dbHandler);
+            break;
+        case 8:
+            viewAllCustomers(dbHandler);
             break;
         case 0:
             cout << "Exiting the program.\n";

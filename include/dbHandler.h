@@ -2,7 +2,9 @@
 #define DBHANDLER_H
 
 #include <sqlite3.h>
+#include "customer.h"
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -28,6 +30,7 @@ public:
                       const string &phone, const string &email, bool isPremiumMember);
     bool deleteCustomer(int customerID);
     void getCustomerByID(int customerID) const;
+    vector<Customer> getAllCustomers() const;
 
     // Video management
     bool addVideo(const string &title, const string &genre, int releaseYear,

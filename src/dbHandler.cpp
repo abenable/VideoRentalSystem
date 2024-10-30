@@ -68,7 +68,6 @@ bool DatabaseHandler::isConnected() const
     return db != nullptr;
 }
 
-// Add a new customer to the database
 bool DatabaseHandler::addCustomer(const std::string &name, const std::string &address,
                                   const std::string &phone, const std::string &email, bool isPremiumMember)
 {
@@ -79,7 +78,6 @@ bool DatabaseHandler::addCustomer(const std::string &name, const std::string &ad
     return executeQuery(query.str());
 }
 
-// Edit an existing customer's information
 bool DatabaseHandler::editCustomer(int customerID, const std::string &name, const std::string &address,
                                    const std::string &phone, const std::string &email, bool isPremiumMember)
 {
@@ -90,7 +88,6 @@ bool DatabaseHandler::editCustomer(int customerID, const std::string &name, cons
     return executeQuery(query.str());
 }
 
-// Delete a customer by ID
 bool DatabaseHandler::deleteCustomer(int customerID)
 {
     std::stringstream query;
@@ -98,7 +95,6 @@ bool DatabaseHandler::deleteCustomer(int customerID)
     return executeQuery(query.str());
 }
 
-// Retrieve and display customer info by ID
 void DatabaseHandler::getCustomerByID(int customerID) const
 {
     std::stringstream query;
@@ -113,19 +109,12 @@ void DatabaseHandler::getCustomerByID(int customerID) const
 
     if (sqlite3_step(stmt) == SQLITE_ROW)
     {
-        int id = sqlite3_column_int(stmt, 0);
-        const unsigned char *name = sqlite3_column_text(stmt, 1);
-        const unsigned char *address = sqlite3_column_text(stmt, 2);
-        const unsigned char *phone = sqlite3_column_text(stmt, 3);
-        const unsigned char *email = sqlite3_column_text(stmt, 4);
-        bool isPremium = sqlite3_column_int(stmt, 5) == 1;
-
-        cout << "Customer ID: " << id << "\n"
-             << "Name: " << name << "\n"
-             << "Address: " << address << "\n"
-             << "Phone: " << phone << "\n"
-             << "Email: " << email << "\n"
-             << "Premium Member: " << (isPremium ? "Yes" : "No") << "\n";
+        cout << "Customer ID: " << sqlite3_column_int(stmt, 0) << "\n"
+             << "Name: " << reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1)) << "\n"
+             << "Address: " << reinterpret_cast<const char *>(sqlite3_column_text(stmt, 2)) << "\n"
+             << "Phone: " << reinterpret_cast<const char *>(sqlite3_column_text(stmt, 3)) << "\n"
+             << "Email: " << reinterpret_cast<const char *>(sqlite3_column_text(stmt, 4)) << "\n"
+             << "Premium Member: " << (sqlite3_column_int(stmt, 5) == 1 ? "Yes" : "No") << "\n";
     }
     else
     {
@@ -135,7 +124,33 @@ void DatabaseHandler::getCustomerByID(int customerID) const
     sqlite3_finalize(stmt);
 }
 
-// Add a new video to the database
+vector<Customer> DatabaseHandler::getAllCustomers() const
+{
+    vector<Customer> customers;
+    sqlite3_stmt *stmt;
+
+    const char *sql = "SELECT customerID, name, email, phone FROM Customers"; // Ensure table name is capitalized to match the creation
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK)
+    {
+        cerr << "Failed to prepare statement: " << sqlite3_errmsg(db) << endl;
+        return customers;
+    }
+
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        int customerID = sqlite3_column_int(stmt, 0);
+        const char *name = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1));
+        const char *email = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 2));
+        const char *phone = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 3));
+
+        // Create a Customer object and add it to the vector
+        customers.emplace_back(customerID, name, email, phone);
+    }
+
+    sqlite3_finalize(stmt);
+    return customers;
+}
+
 bool DatabaseHandler::addVideo(const std::string &title, const std::string &genre, int releaseYear,
                                double rentalPrice, bool isAvailable)
 {
@@ -146,7 +161,6 @@ bool DatabaseHandler::addVideo(const std::string &title, const std::string &genr
     return executeQuery(query.str());
 }
 
-// Edit an existing video's information
 bool DatabaseHandler::editVideo(int videoID, const std::string &title, const std::string &genre,
                                 int releaseYear, double rentalPrice, bool isAvailable)
 {
@@ -157,7 +171,6 @@ bool DatabaseHandler::editVideo(int videoID, const std::string &title, const std
     return executeQuery(query.str());
 }
 
-// Delete a video by ID
 bool DatabaseHandler::deleteVideo(int videoID)
 {
     std::stringstream query;
@@ -165,7 +178,6 @@ bool DatabaseHandler::deleteVideo(int videoID)
     return executeQuery(query.str());
 }
 
-// Retrieve and display video info by ID
 void DatabaseHandler::getVideoByID(int videoID) const
 {
     std::stringstream query;
@@ -180,19 +192,12 @@ void DatabaseHandler::getVideoByID(int videoID) const
 
     if (sqlite3_step(stmt) == SQLITE_ROW)
     {
-        int id = sqlite3_column_int(stmt, 0);
-        const unsigned char *title = sqlite3_column_text(stmt, 1);
-        const unsigned char *genre = sqlite3_column_text(stmt, 2);
-        int releaseYear = sqlite3_column_int(stmt, 3);
-        double rentalPrice = sqlite3_column_double(stmt, 4);
-        bool isAvailable = sqlite3_column_int(stmt, 5) == 1;
-
-        cout << "Video ID: " << id << "\n"
-             << "Title: " << title << "\n"
-             << "Genre: " << genre << "\n"
-             << "Release Year: " << releaseYear << "\n"
-             << "Rental Price: $" << rentalPrice << "\n"
-             << "Availability: " << (isAvailable ? "Available" : "Rented") << "\n";
+        cout << "Video ID: " << sqlite3_column_int(stmt, 0) << "\n"
+             << "Title: " << reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1)) << "\n"
+             << "Genre: " << reinterpret_cast<const char *>(sqlite3_column_text(stmt, 2)) << "\n"
+             << "Release Year: " << sqlite3_column_int(stmt, 3) << "\n"
+             << "Rental Price: $" << sqlite3_column_double(stmt, 4) << "\n"
+             << "Availability: " << (sqlite3_column_int(stmt, 5) == 1 ? "Available" : "Rented") << "\n";
     }
     else
     {
@@ -202,7 +207,6 @@ void DatabaseHandler::getVideoByID(int videoID) const
     sqlite3_finalize(stmt);
 }
 
-// Add a new rental to the database
 bool DatabaseHandler::addRental(int customerID, int videoID, const std::string &rentalDate, const std::string &dueDate)
 {
     std::stringstream query;
@@ -211,7 +215,6 @@ bool DatabaseHandler::addRental(int customerID, int videoID, const std::string &
     return executeQuery(query.str());
 }
 
-// Mark a rental as returned
 bool DatabaseHandler::returnRental(int rentalID)
 {
     std::stringstream query;
@@ -219,7 +222,6 @@ bool DatabaseHandler::returnRental(int rentalID)
     return executeQuery(query.str());
 }
 
-// Retrieve and display rental info by ID
 void DatabaseHandler::getRentalByID(int rentalID) const
 {
     std::stringstream query;
@@ -234,19 +236,12 @@ void DatabaseHandler::getRentalByID(int rentalID) const
 
     if (sqlite3_step(stmt) == SQLITE_ROW)
     {
-        int id = sqlite3_column_int(stmt, 0);
-        int custID = sqlite3_column_int(stmt, 1);
-        int vidID = sqlite3_column_int(stmt, 2);
-        const unsigned char *rentalDate = sqlite3_column_text(stmt, 3);
-        const unsigned char *dueDate = sqlite3_column_text(stmt, 4);
-        bool returnStatus = sqlite3_column_int(stmt, 5) == 1;
-
-        cout << "Rental ID: " << id << "\n"
-             << "Customer ID: " << custID << "\n"
-             << "Video ID: " << vidID << "\n"
-             << "Rental Date: " << rentalDate << "\n"
-             << "Due Date: " << dueDate << "\n"
-             << "Return Status: " << (returnStatus ? "Returned" : "Not Returned") << "\n";
+        cout << "Rental ID: " << sqlite3_column_int(stmt, 0) << "\n"
+             << "Customer ID: " << sqlite3_column_int(stmt, 1) << "\n"
+             << "Video ID: " << sqlite3_column_int(stmt, 2) << "\n"
+             << "Rental Date: " << reinterpret_cast<const char *>(sqlite3_column_text(stmt, 3)) << "\n"
+             << "Due Date: " << reinterpret_cast<const char *>(sqlite3_column_text(stmt, 4)) << "\n"
+             << "Returned: " << (sqlite3_column_int(stmt, 5) == 1 ? "Yes" : "No") << "\n";
     }
     else
     {
@@ -255,5 +250,3 @@ void DatabaseHandler::getRentalByID(int rentalID) const
 
     sqlite3_finalize(stmt);
 }
-
-// You can add more methods as needed...
