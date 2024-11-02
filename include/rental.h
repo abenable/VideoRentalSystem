@@ -2,22 +2,26 @@
 #define RENTAL_H
 
 #include <string>
+#include "video.h"
+#include "customer.h"
+
 using namespace std;
 
 class Rental
 {
 private:
     int rentalID;
-    int customerID;
-    int videoID;
+    Customer customer;
+    Video video;
+    int duration;
     string rentalDate;
     string dueDate;
     bool isReturned;
 
 public:
     // Constructor
-    Rental(int rentalID, int customerID, int videoID, const string &rentalDate,
-           const string &dueDate, bool isReturned = false);
+    Rental(int rentalID, const Customer &customer, const Video &video, int duration,
+           const std::string &rentalDate, const std::string &dueDate, bool isReturned = false);
 
     // Getters
     int getRentalID() const;
