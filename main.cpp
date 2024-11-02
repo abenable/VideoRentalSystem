@@ -1,24 +1,138 @@
-#include "include/dbHandler.h"
 #include <iostream>
 #include <vector>
+#include <string>
 
-using namespace std; // Add this line
+#include "include/dataHandler.h"
 
-void displayMainMenu()
+using namespace std;
+
+// Main menu display function
+void displayMenu()
 {
-    cout << "\n--- Video Rental System ---\n";
-    cout << "1. Add New Customer\n";
-    cout << "2. Add New Video\n";
-    cout << "3. View Customer\n";
-    cout << "4. View Video\n";
-    cout << "5. Add Rental\n";
-    cout << "6. Return Rental\n";
-    cout << "7. View Rental\n";
-    cout << "8. View All Customers\n";
-    cout << "0. Exit\n";
+    cout << "======================================" << endl;
+    cout << "       Welcome to Video Rental        " << endl;
+    cout << "======================================" << endl;
+    cout << "Main Menu Options:" << endl;
+    cout << "1. Rent a Video" << endl;
+    cout << "2. Return a Video" << endl;
+    cout << "3. Manage Customers" << endl;
+    cout << "4. Manage Videos" << endl;
+    cout << "5. View Records" << endl;
+    cout << "6. Exit" << endl;
+    cout << "======================================" << endl;
     cout << "Choose an option: ";
 }
-void viewAllCustomers(DatabaseHandler &dbHandler)
+
+// Display Customer Management submenu
+void displayCustomerMenu()
+{
+    cout << "======================================" << endl;
+    cout << "       Customer Management Menu       " << endl;
+    cout << "======================================" << endl;
+    cout << "1. View All Customers" << endl;
+    cout << "2. Add Customer" << endl;
+    cout << "3. Update Customer" << endl;
+    cout << "4. Delete Customer" << endl;
+    cout << "5. Customer Rental History" << endl;
+    cout << "6. Return to Main Menu" << endl;
+    cout << "======================================" << endl;
+    cout << "Enter your choice: ";
+}
+
+// Display Video Management submenu
+void displayVideoMenu()
+{
+    cout << "======================================" << endl;
+    cout << "         Video Management Menu        " << endl;
+    cout << "======================================" << endl;
+    cout << "1. View All Videos" << endl;
+    cout << "2. Add New Video" << endl;
+    cout << "3. Update Video Info" << endl;
+    cout << "4. Delete Video" << endl;
+    cout << "5. Return to Main Menu" << endl;
+    cout << "======================================" << endl;
+    cout << "Enter your choice: ";
+}
+
+// Display Records Management submenu
+void displayRecordsMenu()
+{
+    cout << "======================================" << endl;
+    cout << "             Records Menu             " << endl;
+    cout << "======================================" << endl;
+    cout << "1. Active Rentals" << endl;
+    cout << "2. Overdue Rentals" << endl;
+    cout << "3. Returned Rentals" << endl;
+    cout << "4. Customers with Overdue Rentals" << endl;
+    cout << "5. Return to Main Menu" << endl;
+    cout << "======================================" << endl;
+    cout << "Enter your choice: ";
+}
+
+// Rent a video
+void rentVideo(DataHandler &dbHandler)
+{
+    int customerID, videoID, duration;
+
+    cout << "Renting a Video." << endl;
+    cout << "\nEnter customer ID: ";
+    cin >> customerID;
+    cout << "Enter video ID: ";
+    cin >> videoID;
+    cout << "Enter rental duration (days): ";
+    cin >> duration;
+
+    if (dbHandler.addRental(customerID, videoID, duration))
+    {
+        cout << "Rental added successfully.\n";
+    }
+    else
+    {
+        cout << "Failed to add rental.\n";
+    }
+}
+
+// Return a video
+void returnVideo(DataHandler &dbHandler)
+{
+    int rentalID;
+    cout << "\nEnter rental ID to return: ";
+    cin >> rentalID;
+
+    if (dbHandler.returnRental(rentalID))
+    {
+        cout << "Rental marked as returned.\n";
+    }
+    else
+    {
+        cout << "Failed to update return status.\n";
+    }
+}
+
+// Add a customer
+void addCustomer(DataHandler &dbHandler)
+{
+    string name, address, phone;
+    cout << "\nEnter customer name: ";
+    cin.ignore(); // Clear newline from input buffer
+    getline(cin, name);
+    cout << "Enter address: ";
+    getline(cin, address);
+    cout << "Enter phone: ";
+    getline(cin, phone);
+
+    if (dbHandler.addCustomer(name, address, phone))
+    {
+        cout << "Customer added successfully.\n";
+    }
+    else
+    {
+        cout << "Failed to add customer.\n";
+    }
+}
+
+// View all customers
+void viewAllCustomers(DataHandler &dbHandler)
 {
     vector<Customer> customers = dbHandler.getAllCustomers();
     if (customers.empty())
@@ -32,40 +146,46 @@ void viewAllCustomers(DatabaseHandler &dbHandler)
         {
             cout << "Customer ID: " << customer.getCustomerID() << "\n"
                  << "Name: " << customer.getName() << "\n"
-                 << "Email: " << customer.getEmail() << "\n"
                  << "Phone: " << customer.getPhone() << "\n\n";
         }
     }
 }
 
-void addCustomer(DatabaseHandler &dbHandler)
+// Manage customers submenu
+void manageCustomers(DataHandler &dbHandler)
 {
-    string name, address, phone, email;
-    cout << "\nEnter customer name: ";
-    getline(cin, name);
-    cout << "Enter address: ";
-    getline(cin, address);
-    cout << "Enter phone: ";
-    getline(cin, phone);
-    cout << "Enter email: ";
-    getline(cin, email);
+    int customerChoice;
 
-    if (dbHandler.addCustomer(name, address, phone, email, true))
+    while (true)
     {
-        cout << "Customer added successfully.\n";
-    }
-    else
-    {
-        cout << "Failed to add customer.\n";
+        displayCustomerMenu();
+        cin >> customerChoice;
+
+        switch (customerChoice)
+        {
+        case 1:
+            viewAllCustomers(dbHandler);
+            break;
+        case 2:
+            addCustomer(dbHandler);
+            break;
+        // Implement update and delete functionality as needed
+        case 6:
+            return; // Exit to the main menu
+        default:
+            cout << "Invalid choice. Please try again." << endl;
+        }
     }
 }
 
-void addVideo(DatabaseHandler &dbHandler)
+// Add a video
+void addVideo(DataHandler &dbHandler)
 {
     string title, genre;
     int releaseYear;
     double rentalPrice;
     cout << "\nEnter video title: ";
+    cin.ignore();
     getline(cin, title);
     cout << "Enter genre: ";
     getline(cin, genre);
@@ -73,7 +193,6 @@ void addVideo(DatabaseHandler &dbHandler)
     cin >> releaseYear;
     cout << "Enter rental price: ";
     cin >> rentalPrice;
-    cin.ignore(); // To clear newline from input buffer
 
     if (dbHandler.addVideo(title, genre, releaseYear, rentalPrice, true))
     {
@@ -85,127 +204,90 @@ void addVideo(DatabaseHandler &dbHandler)
     }
 }
 
-void viewCustomer(DatabaseHandler &dbHandler)
+// Manage videos submenu
+void manageVideos(DataHandler &dbHandler)
 {
-    int customerID;
-    cout << "\nEnter customer ID to view: ";
-    cin >> customerID;
-    cin.ignore(); // Clear newline
-    dbHandler.getCustomerByID(customerID);
-}
+    int videoChoice;
 
-void viewVideo(DatabaseHandler &dbHandler)
-{
-    int videoID;
-    cout << "\nEnter video ID to view: ";
-    cin >> videoID;
-    cin.ignore(); // Clear newline
-    dbHandler.getVideoByID(videoID);
-}
-
-void addRental(DatabaseHandler &dbHandler)
-{
-    int customerID, videoID;
-    string rentalDate, dueDate;
-    cout << "\nEnter customer ID: ";
-    cin >> customerID;
-    cout << "Enter video ID: ";
-    cin >> videoID;
-    cout << "Enter rental date (YYYY-MM-DD): ";
-    cin >> rentalDate;
-    cout << "Enter due date (YYYY-MM-DD): ";
-    cin >> dueDate;
-    cin.ignore(); // Clear newline
-
-    if (dbHandler.addRental(customerID, videoID, rentalDate, dueDate))
+    while (true)
     {
-        cout << "Rental added successfully.\n";
-    }
-    else
-    {
-        cout << "Failed to add rental.\n";
-    }
-}
+        displayVideoMenu();
+        cin >> videoChoice;
 
-void returnRental(DatabaseHandler &dbHandler)
-{
-    int rentalID;
-    cout << "\nEnter rental ID to return: ";
-    cin >> rentalID;
-    cin.ignore(); // Clear newline
-
-    if (dbHandler.returnRental(rentalID))
-    {
-        cout << "Rental marked as returned.\n";
-    }
-    else
-    {
-        cout << "Failed to update return status.\n";
-    }
-}
-
-void viewRental(DatabaseHandler &dbHandler)
-{
-    int rentalID;
-    cout << "\nEnter rental ID to view: ";
-    cin >> rentalID;
-    cin.ignore(); // Clear newline
-    dbHandler.getRentalByID(rentalID);
-}
-
-int main()
-{
-    DatabaseHandler dbHandler("VideoRentalSystem.db");
-
-    if (!dbHandler.isConnected())
-    {
-        cerr << "Failed to connect to the database.\n";
-        return 1;
-    }
-
-    dbHandler.createTables(); // Ensures tables exist
-
-    int choice;
-    do
-    {
-        displayMainMenu();
-        cin >> choice;
-        cin.ignore(); // Clear newline
-
-        switch (choice)
+        switch (videoChoice)
         {
         case 1:
-            addCustomer(dbHandler);
+            // Implement video viewing logic here
             break;
         case 2:
             addVideo(dbHandler);
             break;
-        case 3:
-            viewCustomer(dbHandler);
-            break;
-        case 4:
-            viewVideo(dbHandler);
+        // Implement update and delete functionality as needed
+        case 5:
+            return; // Exit to the main menu
+        default:
+            cout << "Invalid choice. Please try again." << endl;
+        }
+    }
+}
+
+// View records submenu
+void viewRecords(DataHandler &dbHandler)
+{
+    int recordsChoice;
+    while (true)
+    {
+        displayRecordsMenu();
+        cin >> recordsChoice;
+
+        switch (recordsChoice)
+        {
+        case 1:
+            // Implement logic to display active rentals
+            cout << "Displaying active rentals..." << endl;
             break;
         case 5:
-            addRental(dbHandler);
+            cout << "Returning to main menu..." << endl;
+            return;
+        default:
+            cout << "Invalid choice. Please try again." << endl;
+        }
+    }
+}
+
+int main()
+{
+    DataHandler dbHandler("customers.csv", "videos.csv", "rentals.csv");
+
+    int choice;
+
+    while (true)
+    {
+        displayMenu();
+        cin >> choice;
+
+        switch (choice)
+        {
+        case 1:
+            rentVideo(dbHandler);
+            break;
+        case 2:
+            returnVideo(dbHandler);
+            break;
+        case 3:
+            manageCustomers(dbHandler);
+            break;
+        case 4:
+            manageVideos(dbHandler);
+            break;
+        case 5:
+            viewRecords(dbHandler);
             break;
         case 6:
-            returnRental(dbHandler);
-            break;
-        case 7:
-            viewRental(dbHandler);
-            break;
-        case 8:
-            viewAllCustomers(dbHandler);
-            break;
-        case 0:
-            cout << "Exiting the program.\n";
-            break;
+            cout << "Exiting program. Thank you!" << endl;
+            return 0;
         default:
-            cout << "Invalid option. Please try again.\n";
-            break;
+            cout << "Invalid choice. Please try again." << endl;
         }
-    } while (choice != 0);
-
-    return 0;
+    }
 }
