@@ -1,10 +1,11 @@
 #include "../include/video.h"
 #include <iostream>
+#include <string>
 
-using namespace std; // Add this line
+using namespace std;
 
 // Constructor implementation
-Video::Video(int id, const std::string &title, const std::string &genre, int year, double price, bool available)
+Video::Video(int id, const string &title, const string &genre, int year, double price, bool available)
     : videoID(id), title(title), genre(genre), releaseYear(year), rentalPrice(price), isAvailable(available) {}
 
 // Getters
