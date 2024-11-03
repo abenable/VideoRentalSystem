@@ -1,7 +1,6 @@
 #include <iostream>
 #include <vector>
 #include <string>
-
 #include "include/dataHandler.h"
 
 using namespace std;
@@ -73,6 +72,8 @@ void displayRecordsMenu()
 void rentVideo(DataHandler &dataHandler)
 {
     int customerID, videoID, duration;
+    const vector<Customer> &customers = dataHandler.getAllCustomers();
+    const vector<Video> &videos = dataHandler.getAllVideos();
 
     cout << "Renting a Video." << endl;
     cout << "\nEnter customer ID: ";
@@ -82,13 +83,44 @@ void rentVideo(DataHandler &dataHandler)
     cout << "Enter rental duration (days): ";
     cin >> duration;
 
-    if (dataHandler.addRental(customerID, videoID, duration))
+    // Find customer by ID
+    const Customer *selectedCustomer = nullptr;
+    for (const auto &customer : customers)
     {
-        cout << "Rental added successfully.\n";
+        if (customer.getCustomerID() == customerID)
+        {
+            selectedCustomer = &customer;
+            break;
+        }
+    }
+
+    // Find video by ID
+    const Video *selectedVideo = nullptr;
+    for (const auto &video : videos)
+    {
+        if (video.getVideoID() == videoID)
+        {
+            selectedVideo = &video;
+            break;
+        }
+    }
+
+    // Check if both customer and video are found
+    if (selectedCustomer && selectedVideo)
+    {
+        // Optionally, add to dataHandler if there's a method for it
+        if (dataHandler.addRental(*selectedCustomer, *selectedVideo, duration))
+        {
+            cout << "Rental added successfully.\n";
+        }
+        else
+        {
+            cout << "Failed to add rental.\n";
+        }
     }
     else
     {
-        cout << "Failed to add rental.\n";
+        cout << "Customer or video not found.\n";
     }
 }
 
@@ -120,8 +152,10 @@ void addCustomer(DataHandler &dataHandler)
     getline(cin, address);
     cout << "Enter phone: ";
     getline(cin, phone);
+    int customerID = rand() % 1000 + 1; // Simple random ID generator
+    Customer customer(customerID, name, address, phone);
 
-    if (dataHandler.addCustomer(name, address, phone))
+    if (dataHandler.addCustomer(customer))
     {
         cout << "Customer added successfully.\n";
     }
@@ -151,6 +185,7 @@ void viewAllCustomers(DataHandler &dataHandler)
     }
 }
 
+// Display active rentals
 void displayActiveRentals(DataHandler &dataHandler)
 {
     vector<Rental> activeRentals = dataHandler.getActiveRentals();
@@ -171,6 +206,7 @@ void displayActiveRentals(DataHandler &dataHandler)
         }
     }
 }
+
 // Display overdue rentals
 void displayOverdueRentals(DataHandler &dataHandler)
 {
@@ -214,6 +250,7 @@ void displayReturnedRentals(DataHandler &dataHandler)
         }
     }
 }
+
 // Display customers with overdue rentals
 void displayCustomersWithOverdueRentals(DataHandler &dataHandler)
 {
@@ -233,6 +270,7 @@ void displayCustomersWithOverdueRentals(DataHandler &dataHandler)
         }
     }
 }
+
 // Manage customers submenu
 void manageCustomers(DataHandler &dataHandler)
 {
@@ -325,10 +363,16 @@ void viewRecords(DataHandler &dataHandler)
         switch (recordsChoice)
         {
         case 1:
-            // Implement logic to display active rentals
-            cout << "Displaying active rentals..." << endl;
-            // Inside the viewRecords function
             displayActiveRentals(dataHandler);
+            break;
+        case 2:
+            displayOverdueRentals(dataHandler);
+            break;
+        case 3:
+            displayReturnedRentals(dataHandler);
+            break;
+        case 4:
+            displayCustomersWithOverdueRentals(dataHandler);
             break;
         case 5:
             cout << "Returning to main menu..." << endl;
