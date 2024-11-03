@@ -151,6 +151,67 @@ bool DataHandler::addRental(int customerID, int videoID, int duration)
          << rentalDateStream.str() << "," << dueDateStream.str() << ",0" << endl;
     return true;
 }
+vector<Rental> DataHandler::getActiveRentals() const
+{
+    vector<Rental> activeRentals;
+    ifstream file(rentalFile);
+    string line;
+
+    while (getline(file, line))
+    {
+        auto data = splitCSVLine(line, ',');
+        if (data.size() >= 6 && data[5] == "0") // Check if the rental is not returned
+        {
+            activeRentals.emplace_back(stoi(data[0]), stoi(data[1]), stoi(data[2]), data[3], data[4], false);
+        }
+    }
+    return activeRentals;
+}
+vector<Rental> DataHandler::getOverdueRentals() const
+{
+    vector<Rental> overdueRentals;
+    ifstream file(rentalFile);
+    string line;
+
+    // Get the current date
+    time_t now = time(0);
+    tm *currentDate = localtime(&now);
+
+    while (getline(file, line))
+    {
+        auto data = splitCSVLine(line, ',');
+        if (data.size() >= 6 && data[5] == "0") // Check if the rental is not returned
+        {
+            // Parse the due date from the file
+            tm dueDate = {};
+            stringstream ss(data[4]);
+            ss >> get_time(&dueDate, "%Y-%m-%d");
+
+            // Compare the due date with the current date
+            if (mktime(&dueDate) < now)
+            {
+                overdueRentals.emplace_back(stoi(data[0]), stoi(data[1]), stoi(data[2]), data[3], data[4], false);
+            }
+        }
+    }
+    return overdueRentals;
+}
+vector<Rental> DataHandler::getReturnedRentals() const
+{
+    vector<Rental> returnedRentals;
+    ifstream file(rentalFile);
+    string line;
+
+    while (getline(file, line))
+    {
+        auto data = splitCSVLine(line, ',');
+        if (data.size() >= 6 && data[5] == "1") // Check if the rental is returned
+        {
+            returnedRentals.emplace_back(stoi(data[0]), stoi(data[1]), stoi(data[2]), data[3], data[4], true);
+        }
+    }
+    return returnedRentals;
+}
 
 bool DataHandler::returnRental(int rentalID)
 {
@@ -179,4 +240,25 @@ bool DataHandler::returnRental(int rentalID)
     rename("temp.csv", rentalFile.c_str());
 
     return true;
+}
+
+vector<Customer> DataHandler::getCustomersWithOverdueRentals() const
+{
+    vector<Customer> customersWithOverdueRentals;
+    auto overdueRentals = getOverdueRentals();
+    auto allCustomers = getAllCustomers();
+
+    for (const auto &rental : overdueRentals)
+    {
+        for (const auto &customer : allCustomers)
+        {
+            if (customer.getCustomerID() == rental.getCustomerID())
+            {
+                customersWithOverdueRentals.push_back(customer);
+                break;
+            }
+        }
+    }
+
+    return customersWithOverdueRentals;
 }
