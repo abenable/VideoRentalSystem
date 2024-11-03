@@ -35,6 +35,10 @@ public:
     bool deleteVideo(int videoID);
 
     // Rental Management
+    vector<Rental> getActiveRentals() const;
+    vector<Rental> getReturnedRentals() const;
+    vector<Rental> getOverdueRentals() const;
+    vector<Customer> getCustomersWithOverdueRentals() const;
     bool addRental(int customerID, int videoID, int duration);
     bool returnRental(int rentalID);
 };
