@@ -70,7 +70,7 @@ void displayRecordsMenu()
 }
 
 // Rent a video
-void rentVideo(DataHandler &dbHandler)
+void rentVideo(DataHandler &dataHandler)
 {
     int customerID, videoID, duration;
 
@@ -82,7 +82,7 @@ void rentVideo(DataHandler &dbHandler)
     cout << "Enter rental duration (days): ";
     cin >> duration;
 
-    if (dbHandler.addRental(customerID, videoID, duration))
+    if (dataHandler.addRental(customerID, videoID, duration))
     {
         cout << "Rental added successfully.\n";
     }
@@ -93,13 +93,13 @@ void rentVideo(DataHandler &dbHandler)
 }
 
 // Return a video
-void returnVideo(DataHandler &dbHandler)
+void returnVideo(DataHandler &dataHandler)
 {
     int rentalID;
     cout << "\nEnter rental ID to return: ";
     cin >> rentalID;
 
-    if (dbHandler.returnRental(rentalID))
+    if (dataHandler.returnRental(rentalID))
     {
         cout << "Rental marked as returned.\n";
     }
@@ -110,7 +110,7 @@ void returnVideo(DataHandler &dbHandler)
 }
 
 // Add a customer
-void addCustomer(DataHandler &dbHandler)
+void addCustomer(DataHandler &dataHandler)
 {
     string name, address, phone;
     cout << "\nEnter customer name: ";
@@ -121,7 +121,7 @@ void addCustomer(DataHandler &dbHandler)
     cout << "Enter phone: ";
     getline(cin, phone);
 
-    if (dbHandler.addCustomer(name, address, phone))
+    if (dataHandler.addCustomer(name, address, phone))
     {
         cout << "Customer added successfully.\n";
     }
@@ -132,9 +132,9 @@ void addCustomer(DataHandler &dbHandler)
 }
 
 // View all customers
-void viewAllCustomers(DataHandler &dbHandler)
+void viewAllCustomers(DataHandler &dataHandler)
 {
-    vector<Customer> customers = dbHandler.getAllCustomers();
+    vector<Customer> customers = dataHandler.getAllCustomers();
     if (customers.empty())
     {
         cout << "No registered customers found.\n";
@@ -151,8 +151,90 @@ void viewAllCustomers(DataHandler &dbHandler)
     }
 }
 
+void displayActiveRentals(DataHandler &dataHandler)
+{
+    vector<Rental> activeRentals = dataHandler.getActiveRentals();
+    if (activeRentals.empty())
+    {
+        cout << "No active rentals found.\n";
+    }
+    else
+    {
+        cout << "Active Rentals:\n";
+        for (const auto &rental : activeRentals)
+        {
+            cout << "Rental ID: " << rental.getRentalID() << "\n"
+                 << "Customer ID: " << rental.getCustomerID() << "\n"
+                 << "Video ID: " << rental.getVideoID() << "\n"
+                 << "Rental Date: " << rental.getRentalDate() << "\n"
+                 << "Due Date: " << rental.getDueDate() << "\n\n";
+        }
+    }
+}
+// Display overdue rentals
+void displayOverdueRentals(DataHandler &dataHandler)
+{
+    vector<Rental> overdueRentals = dataHandler.getOverdueRentals();
+    if (overdueRentals.empty())
+    {
+        cout << "No overdue rentals found.\n";
+    }
+    else
+    {
+        cout << "Overdue Rentals:\n";
+        for (const auto &rental : overdueRentals)
+        {
+            cout << "Rental ID: " << rental.getRentalID() << "\n"
+                 << "Customer ID: " << rental.getCustomerID() << "\n"
+                 << "Video ID: " << rental.getVideoID() << "\n"
+                 << "Rental Date: " << rental.getRentalDate() << "\n"
+                 << "Due Date: " << rental.getDueDate() << "\n\n";
+        }
+    }
+}
+
+// Display returned rentals
+void displayReturnedRentals(DataHandler &dataHandler)
+{
+    vector<Rental> returnedRentals = dataHandler.getReturnedRentals();
+    if (returnedRentals.empty())
+    {
+        cout << "No returned rentals found.\n";
+    }
+    else
+    {
+        cout << "Returned Rentals:\n";
+        for (const auto &rental : returnedRentals)
+        {
+            cout << "Rental ID: " << rental.getRentalID() << "\n"
+                 << "Customer ID: " << rental.getCustomerID() << "\n"
+                 << "Video ID: " << rental.getVideoID() << "\n"
+                 << "Rental Date: " << rental.getRentalDate() << "\n"
+                 << "Return Date: " << rental.getDueDate() << "\n\n";
+        }
+    }
+}
+// Display customers with overdue rentals
+void displayCustomersWithOverdueRentals(DataHandler &dataHandler)
+{
+    vector<Customer> customers = dataHandler.getCustomersWithOverdueRentals();
+    if (customers.empty())
+    {
+        cout << "No customers with overdue rentals found.\n";
+    }
+    else
+    {
+        cout << "Customers with Overdue Rentals:\n";
+        for (const auto &customer : customers)
+        {
+            cout << "Customer ID: " << customer.getCustomerID() << "\n"
+                 << "Name: " << customer.getName() << "\n"
+                 << "Phone: " << customer.getPhone() << "\n\n";
+        }
+    }
+}
 // Manage customers submenu
-void manageCustomers(DataHandler &dbHandler)
+void manageCustomers(DataHandler &dataHandler)
 {
     int customerChoice;
 
@@ -164,10 +246,10 @@ void manageCustomers(DataHandler &dbHandler)
         switch (customerChoice)
         {
         case 1:
-            viewAllCustomers(dbHandler);
+            viewAllCustomers(dataHandler);
             break;
         case 2:
-            addCustomer(dbHandler);
+            addCustomer(dataHandler);
             break;
         // Implement update and delete functionality as needed
         case 6:
@@ -179,7 +261,7 @@ void manageCustomers(DataHandler &dbHandler)
 }
 
 // Add a video
-void addVideo(DataHandler &dbHandler)
+void addVideo(DataHandler &dataHandler)
 {
     string title, genre;
     int releaseYear;
@@ -194,7 +276,7 @@ void addVideo(DataHandler &dbHandler)
     cout << "Enter rental price: ";
     cin >> rentalPrice;
 
-    if (dbHandler.addVideo(title, genre, releaseYear, rentalPrice, true))
+    if (dataHandler.addVideo(title, genre, releaseYear, rentalPrice, true))
     {
         cout << "Video added successfully.\n";
     }
@@ -205,7 +287,7 @@ void addVideo(DataHandler &dbHandler)
 }
 
 // Manage videos submenu
-void manageVideos(DataHandler &dbHandler)
+void manageVideos(DataHandler &dataHandler)
 {
     int videoChoice;
 
@@ -220,7 +302,7 @@ void manageVideos(DataHandler &dbHandler)
             // Implement video viewing logic here
             break;
         case 2:
-            addVideo(dbHandler);
+            addVideo(dataHandler);
             break;
         // Implement update and delete functionality as needed
         case 5:
@@ -232,7 +314,7 @@ void manageVideos(DataHandler &dbHandler)
 }
 
 // View records submenu
-void viewRecords(DataHandler &dbHandler)
+void viewRecords(DataHandler &dataHandler)
 {
     int recordsChoice;
     while (true)
@@ -245,6 +327,8 @@ void viewRecords(DataHandler &dbHandler)
         case 1:
             // Implement logic to display active rentals
             cout << "Displaying active rentals..." << endl;
+            // Inside the viewRecords function
+            displayActiveRentals(dataHandler);
             break;
         case 5:
             cout << "Returning to main menu..." << endl;
@@ -257,7 +341,7 @@ void viewRecords(DataHandler &dbHandler)
 
 int main()
 {
-    DataHandler dbHandler("customers.csv", "videos.csv", "rentals.csv");
+    DataHandler dataHandler("customers.csv", "videos.csv", "rentals.csv");
 
     int choice;
 
@@ -269,19 +353,19 @@ int main()
         switch (choice)
         {
         case 1:
-            rentVideo(dbHandler);
+            rentVideo(dataHandler);
             break;
         case 2:
-            returnVideo(dbHandler);
+            returnVideo(dataHandler);
             break;
         case 3:
-            manageCustomers(dbHandler);
+            manageCustomers(dataHandler);
             break;
         case 4:
-            manageVideos(dbHandler);
+            manageVideos(dataHandler);
             break;
         case 5:
-            viewRecords(dbHandler);
+            viewRecords(dataHandler);
             break;
         case 6:
             cout << "Exiting program. Thank you!" << endl;
