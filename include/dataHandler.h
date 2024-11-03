@@ -24,8 +24,8 @@ public:
     DataHandler(const string &customerFile, const string &videoFile, const string &rentalFile);
 
     // Customer Management
-    bool addCustomer(const string &name, const string &address, const string &phone);
-    bool editCustomer(int customerID, const string &name, const string &address, const string &phone);
+    bool addCustomer(Customer &customer);
+    bool editCustomer(Customer &customer);
     bool deleteCustomer(int customerID);
     vector<Customer> getAllCustomers() const;
 
@@ -33,13 +33,14 @@ public:
     bool addVideo(const string &title, const string &genre, int releaseYear, double rentalPrice, bool isAvailable);
     bool editVideo(int videoID, const string &title, const string &genre, int releaseYear, double rentalPrice, bool isAvailable);
     bool deleteVideo(int videoID);
+    vector<Video> getAllVideos() const;
 
     // Rental Management
     vector<Rental> getActiveRentals() const;
     vector<Rental> getReturnedRentals() const;
     vector<Rental> getOverdueRentals() const;
     vector<Customer> getCustomersWithOverdueRentals() const;
-    bool addRental(int customerID, int videoID, int duration);
+    bool addRental(const Customer &customer, const Video &video, int duration);
     bool returnRental(int rentalID);
 };
 

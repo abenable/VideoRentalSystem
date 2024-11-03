@@ -45,21 +45,20 @@ void DataHandler::removeLineFromFile(const string &filename, const string &lineI
 
 // Customer functions
 
-bool DataHandler::addCustomer(const string &name, const string &address, const string &phone)
+bool DataHandler::addCustomer(Customer &customer)
 {
     ofstream file(customerFile, ios::app);
     if (!file)
         return false;
 
-    int customerID = rand() % 1000 + 1; // Simple random ID generator
-    file << customerID << "," << name << "," << address << "," << phone << endl;
+    file << customer.getCustomerID() << "," << customer.getName() << "," << customer.getAddress() << "," << customer.getPhone() << endl;
     return true;
 }
 
-bool DataHandler::editCustomer(int customerID, const string &name, const string &address, const string &phone)
+bool DataHandler::editCustomer(Customer &customer)
 {
-    removeLineFromFile(customerFile, to_string(customerID));
-    return addCustomer(name, address, phone);
+    removeLineFromFile(customerFile, to_string(customer.getCustomerID()));
+    return addCustomer(customer);
 }
 
 bool DataHandler::deleteCustomer(int customerID)
@@ -117,9 +116,26 @@ bool DataHandler::deleteVideo(int videoID)
     return true;
 }
 
+vector<Video> DataHandler::getAllVideos() const
+{
+    vector<Video> videos;
+    ifstream file(videoFile);
+    string line;
+
+    while (getline(file, line))
+    {
+        auto data = splitCSVLine(line, ',');
+        if (data.size() >= 4)
+        {
+            videos.emplace_back(stoi(data[0]), data[1], data[2], data[3]);
+        }
+    }
+    return videos;
+}
+
 // Rental functions
 
-bool DataHandler::addRental(int customerID, int videoID, int duration)
+bool DataHandler::addRental(const Customer &customer, const Video &video, int duration)
 {
     ofstream file(rentalFile, ios::app);
     if (!file)
@@ -147,7 +163,7 @@ bool DataHandler::addRental(int customerID, int videoID, int duration)
 
     // Construct the CSV entry
     int rentalID = rand() % 1000 + 1; // Simple random ID generator
-    file << rentalID << "," << customerID << "," << videoID << ","
+    file << rentalID << "," << customer.getCustomerID() << "," << video.getVideoID() << ","
          << rentalDateStream.str() << "," << dueDateStream.str() << ",0" << endl;
     return true;
 }
