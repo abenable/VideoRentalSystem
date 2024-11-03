@@ -21,7 +21,7 @@ private:
 public:
     // Constructor
     Rental(int rentalID, const Customer &customer, const Video &video, int duration,
-           const std::string &rentalDate, const std::string &dueDate, bool isReturned = false);
+           bool isReturned = false);
 
     // Getters
     int getRentalID() const;

@@ -6,9 +6,9 @@ using namespace std;
 
 // Constructor implementation
 Rental::Rental(int rentalID, const Customer &customer, const Video &video, int duration,
-               const string &rentalDate, const string &dueDate, bool isReturned)
+               bool isReturned)
     : rentalID(rentalID), customer(customer), video(video), duration(duration),
-      rentalDate(rentalDate), dueDate(dueDate), isReturned(isReturned) {}
+      isReturned(isReturned) {}
 
 // Getters
 int Rental::getRentalID() const { return rentalID; }
