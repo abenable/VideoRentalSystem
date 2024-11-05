@@ -20,22 +20,23 @@ private:
 
 public:
     // Constructor
-    Rental(int rentalID, const Customer &customer, const Video &video, int duration,
-           bool isReturned = false);
-
-    // Getters
+    Rental(int rentalID, const Customer *customer, const Video *video, int duration, bool isReturned);
     int getRentalID() const;
     int getCustomerID() const;
     int getVideoID() const;
+    int getDuration() const;
     string getRentalDate() const;
     string getDueDate() const;
     bool getIsReturned() const;
 
     // Setters
     void setReturnStatus(bool status);
+    string setRentalDate() const;
+    string setDueDate() const;
 
     // Display rental info
-    void displayRentalInfo() const;
+    void
+    displayRentalInfo() const;
 };
 
 #endif // RENTAL_H
