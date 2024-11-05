@@ -27,21 +27,23 @@ public:
     bool addCustomer(Customer &customer);
     bool editCustomer(Customer &customer);
     bool deleteCustomer(int customerID);
+    Customer *getCustomerByID(int customerID) const;
     vector<Customer> getAllCustomers() const;
 
     // Video Management
-    bool addVideo(const string &title, const string &genre, int releaseYear, double rentalPrice, bool isAvailable);
-    bool editVideo(int videoID, const string &title, const string &genre, int releaseYear, double rentalPrice, bool isAvailable);
+    bool addVideo(Video &video);
+    bool editVideo(Video &video);
     bool deleteVideo(int videoID);
+    Video *getVideoByID(int videoID) const;
     vector<Video> getAllVideos() const;
 
-    // Rental Management
-    vector<Rental> getActiveRentals() const;
-    vector<Rental> getReturnedRentals() const;
-    vector<Rental> getOverdueRentals() const;
-    vector<Customer> getCustomersWithOverdueRentals() const;
-    bool addRental(const Customer &customer, const Video &video, int duration);
+    // Rental management
+    bool addRental(Rental &rental);
     bool returnRental(int rentalID);
+    vector<Rental> getActiveRentals() const;
+    vector<Rental> getOverdueRentals() const;
+    vector<Rental> getReturnedRentals() const;
+    vector<Customer> customersWithOverdueRentals() const;
 };
 
 #endif

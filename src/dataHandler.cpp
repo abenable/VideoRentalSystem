@@ -66,6 +66,28 @@ bool DataHandler::deleteCustomer(int customerID)
     removeLineFromFile(customerFile, to_string(customerID));
     return true;
 }
+Customer *DataHandler::getCustomerByID(int customerID) const
+{
+    ifstream file(customerFile);
+    string line;
+
+    while (getline(file, line))
+    {
+        auto data = splitCSVLine(line, ',');
+        if (data.size() >= 4)
+        {
+            int id = stoi(data[0]);
+            if (id == customerID)
+            {
+                string name = data[1];
+                string address = data[2];
+                string phone = data[3];
+                return new Customer(id, name, address, phone);
+            }
+        }
+    }
+    return nullptr;
+}
 
 vector<Customer> DataHandler::getAllCustomers() const
 {
@@ -83,37 +105,50 @@ vector<Customer> DataHandler::getAllCustomers() const
     }
     return customers;
 }
-
 // Video functions
 
-bool DataHandler::addVideo(const string &title, const string &genre, int releaseYear, double rentalPrice, bool isAvailable)
+bool DataHandler::addVideo(Video &video)
 {
     ofstream file(videoFile, ios::app);
     if (!file)
         return false;
 
-    int videoID = rand() % 1000 + 1; // Simple random ID generator
-    file << videoID << "," << title << "," << genre << "," << releaseYear << ","
-         << rentalPrice << "," << (isAvailable ? "1" : "0") << endl;
+    file << video.getVideoID() << "," << video.getTitle() << "," << video.getPrice() << "," << video.getAvailability() << endl;
     return true;
 }
 
-bool DataHandler::editVideo(int videoID, const string &title, const string &genre, int releaseYear, double rentalPrice, bool isAvailable)
+bool DataHandler::editVideo(Video &video)
 {
-    removeLineFromFile(videoFile, to_string(videoID));
-    ofstream file(videoFile, ios::app);
-    if (!file)
-        return false;
-
-    file << videoID << "," << title << "," << genre << "," << releaseYear << ","
-         << rentalPrice << "," << (isAvailable ? "1" : "0") << endl;
-    return true;
+    removeLineFromFile(videoFile, to_string(video.getVideoID()));
+    return addVideo(video);
 }
 
 bool DataHandler::deleteVideo(int videoID)
 {
     removeLineFromFile(videoFile, to_string(videoID));
     return true;
+}
+Video *DataHandler::getVideoByID(int videoID) const
+{
+    ifstream file(videoFile);
+    string line;
+
+    while (getline(file, line))
+    {
+        auto data = splitCSVLine(line, ',');
+        if (data.size() >= 4)
+        {
+            int id = stoi(data[0]);
+            if (id == videoID)
+            {
+                string title = data[1];
+                double price = stod(data[2]);
+                bool available = (data[3] == "true" || data[3] == "1");
+                return new Video(id, title, price, available);
+            }
+        }
+    }
+    return nullptr;
 }
 
 vector<Video> DataHandler::getAllVideos() const
@@ -127,106 +162,29 @@ vector<Video> DataHandler::getAllVideos() const
         auto data = splitCSVLine(line, ',');
         if (data.size() >= 4)
         {
-            videos.emplace_back(stoi(data[0]), data[1], data[2], data[3]);
+            int id = stoi(data[0]);
+            string title = data[1];
+            double price = stod(data[2]);
+            bool available = (data[3] == "true" || data[3] == "1");
+
+            videos.emplace_back(id, title, price, available);
         }
     }
     return videos;
 }
 
-// Rental functions
-
-bool DataHandler::addRental(const Customer &customer, const Video &video, int duration)
+// Rentals functions
+bool DataHandler::addRental(Rental &rental)
 {
     ofstream file(rentalFile, ios::app);
     if (!file)
         return false;
 
-    // Get the current date
-    time_t now = time(0);
-    tm *rentalDate = localtime(&now);
-
-    // Format the current date as YYYY-MM-DD for the rental date
-    stringstream rentalDateStream;
-    rentalDateStream << 1900 + rentalDate->tm_year << "-"
-                     << setw(2) << setfill('0') << 1 + rentalDate->tm_mon << "-"
-                     << setw(2) << setfill('0') << rentalDate->tm_mday;
-
-    // Calculate the due date by adding the duration to the rental date
-    rentalDate->tm_mday += duration;
-    mktime(rentalDate); // Normalize the date structure if month/day overflows
-
-    // Format the due date as YYYY-MM-DD
-    stringstream dueDateStream;
-    dueDateStream << 1900 + rentalDate->tm_year << "-"
-                  << setw(2) << setfill('0') << 1 + rentalDate->tm_mon << "-"
-                  << setw(2) << setfill('0') << rentalDate->tm_mday;
-
     // Construct the CSV entry
     int rentalID = rand() % 1000 + 1; // Simple random ID generator
-    file << rentalID << "," << customer.getCustomerID() << "," << video.getVideoID() << ","
-         << rentalDateStream.str() << "," << dueDateStream.str() << ",0" << endl;
+    file << rentalID << "," << rental.getCustomerID() << "," << rental.getVideoID() << ","
+         << rental.getRentalDate() << "," << rental.getDueDate() << "," << rental.getDuration() << ",0" << endl;
     return true;
-}
-vector<Rental> DataHandler::getActiveRentals() const
-{
-    vector<Rental> activeRentals;
-    ifstream file(rentalFile);
-    string line;
-
-    while (getline(file, line))
-    {
-        auto data = splitCSVLine(line, ',');
-        if (data.size() >= 6 && data[5] == "0") // Check if the rental is not returned
-        {
-            activeRentals.emplace_back(stoi(data[0]), stoi(data[1]), stoi(data[2]), data[3], data[4], false);
-        }
-    }
-    return activeRentals;
-}
-vector<Rental> DataHandler::getOverdueRentals() const
-{
-    vector<Rental> overdueRentals;
-    ifstream file(rentalFile);
-    string line;
-
-    // Get the current date
-    time_t now = time(0);
-    tm *currentDate = localtime(&now);
-
-    while (getline(file, line))
-    {
-        auto data = splitCSVLine(line, ',');
-        if (data.size() >= 6 && data[5] == "0") // Check if the rental is not returned
-        {
-            // Parse the due date from the file
-            tm dueDate = {};
-            stringstream ss(data[4]);
-            ss >> get_time(&dueDate, "%Y-%m-%d");
-
-            // Compare the due date with the current date
-            if (mktime(&dueDate) < now)
-            {
-                overdueRentals.emplace_back(stoi(data[0]), stoi(data[1]), stoi(data[2]), data[3], data[4], false);
-            }
-        }
-    }
-    return overdueRentals;
-}
-vector<Rental> DataHandler::getReturnedRentals() const
-{
-    vector<Rental> returnedRentals;
-    ifstream file(rentalFile);
-    string line;
-
-    while (getline(file, line))
-    {
-        auto data = splitCSVLine(line, ',');
-        if (data.size() >= 6 && data[5] == "1") // Check if the rental is returned
-        {
-            returnedRentals.emplace_back(stoi(data[0]), stoi(data[1]), stoi(data[2]), data[3], data[4], true);
-        }
-    }
-    return returnedRentals;
 }
 
 bool DataHandler::returnRental(int rentalID)
@@ -258,7 +216,94 @@ bool DataHandler::returnRental(int rentalID)
     return true;
 }
 
-vector<Customer> DataHandler::getCustomersWithOverdueRentals() const
+vector<Rental> DataHandler::getActiveRentals() const
+{
+    vector<Rental> activeRentals;
+    ifstream file(rentalFile);
+    string line;
+
+    while (getline(file, line))
+    {
+        auto data = splitCSVLine(line, ',');
+        if (data.size() >= 7 && data[6] == "0") // Check if the rental is not returned
+        {
+            int rentalID = stoi(data[0]);
+            int customerID = stoi(data[1]);
+            int videoID = stoi(data[2]);
+            int duration = stoi(data[5]);
+            string rentalDate = data[3];
+            string dueDate = data[4];
+            bool returned = false;
+
+            // Assuming you have a way to get Customer* and Video* from their IDs
+            const Customer *customer = getCustomerByID(customerID);
+            const Video *video = getVideoByID(videoID);
+            if (customer != nullptr && video != nullptr)
+            {
+                activeRentals.emplace_back(rentalID, customer, video, duration, returned);
+            }
+        }
+    }
+    return activeRentals;
+}
+vector<Rental> DataHandler::getOverdueRentals() const
+{
+    vector<Rental> overdueRentals;
+    ifstream file(rentalFile);
+    string line;
+
+    // Get the current date as time_t for comparison
+    time_t now = time(0);
+
+    while (getline(file, line))
+    {
+        auto data = splitCSVLine(line, ',');
+        if (data.size() >= 6 && data[5] == "0") // Check if the rental is not returned
+        {
+            // Create a Rental object using data from the CSV
+            Rental rental(stoi(data[0]), getCustomerByID(stoi(data[1])), getVideoByID(stoi(data[2])),
+                          stoi(data[4]), false);
+
+            // Convert rental's due date to time_t for comparison
+            std::tm dueDate = {};
+            std::istringstream ss(rental.getDueDate());
+            ss >> std::get_time(&dueDate, "%Y-%m-%d");
+            time_t dueDateTime = mktime(&dueDate);
+
+            // Check if the due date has passed
+            if (dueDateTime < now)
+            {
+                overdueRentals.push_back(rental);
+            }
+        }
+    }
+    return overdueRentals;
+}
+
+vector<Rental> DataHandler::getReturnedRentals() const
+{
+    vector<Rental> returnedRentals;
+    ifstream file(rentalFile);
+    string line;
+
+    while (getline(file, line))
+    {
+        auto data = splitCSVLine(line, ',');
+        if (data.size() >= 6 && data[5] == "1") // Check if the rental is returned
+        {
+            // Fetch Customer and Video pointers using their IDs
+            const Customer *customer = getCustomerByID(stoi(data[1]));
+            const Video *video = getVideoByID(stoi(data[2]));
+            int duration = stoi(data[4]);
+
+            // Create Rental object and add it to the returnedRentals vector
+            returnedRentals.emplace_back(stoi(data[0]), customer, video, duration, true);
+        }
+    }
+    return returnedRentals;
+}
+
+vector<Customer> DataHandler::customersWithOverdueRentals() const
 {
     vector<Customer> customersWithOverdueRentals;
     auto overdueRentals = getOverdueRentals();
